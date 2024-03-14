@@ -1,0 +1,215 @@
+---end to end selfguide
+
+1) create an ec2 in requied region
+
+Step 1: Install Eksctl and Kubectl utility
+curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+sudo mv /tmp/eksctl /usr/local/bin
+eksctl version
+
+step 2
+sudo apt update
+sudo snap install kubectl --classic
+kubectl version --output=yaml
+
+step 3 
+install awscli
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+apt install unzip
+unzip awscliv2.zip
+sudo ./aws/install
+aws --version
+
+step-4
+docker insatllation
+sudo apt install docker.io
+systemctl status docker
+sudo usermod -aG docker ubuntu
+logout and login again
+clone source code
+docker run hello-world
+docker login
+user and password
+docker build -t itskumaran/node.js:v1 .
+docker run -d -P itskumaran/node.js:v1 .
+docker push itskumaran/node.js:v1
+
+step-5
+jenkins insatllation
+step 1
+sudo apt update
+sudo apt install openjdk-11-jre
+
+step 2
+java -version
+
+step 3
+curl -fsSL https://pkg.jenkins.io/debian/jenkins.io-2023.key | sudo tee \
+  /usr/share/keyrings/jenkins-keyring.asc > /dev/null
+echo deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] \
+  https://pkg.jenkins.io/debian binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+sudo apt-get update
+sudo apt-get install jenkins
+
+Step4
+allow security group 8080 port access in inbound rule
+
+step 5
+localhost:8080 or EC2 publicid:80	
+
+step 6
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+
+step 7
+sudo apt update
+sudo apt install docker.io
+
+step 8
+sudo usermod -aG docker ubuntu
+logout and login
+
+step 9
+sudo usermod -aG docker jenkins
+logout and login
+docker run hello-world and check
+
+step 10
+new item and pipeline -- to definition pipeline from scm
+
+select git paste the url - creditials and give the path
+
+
+check docker pipeline - plugins
+
+step 11
+install sonarqube scanner - plugin
+
+install sonarqube in ec2 or local where you run jenkins 
+sudo su-
+adduser sonarqube
+sonar password 
+
+*sonarqube scanner {pwd - admins}
+
+configure sonarqube in ec2
+apt install unzip
+adduser sonarqube
+sudo su - sonarqube
+wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.4.0.54424.zip
+unzip *
+chmod -R 755 /home/sonarqube/sonarqube-9.4.0.54424
+chown -R sonarqube:sonarqube /home/sonarqube/sonarqube-9.4.0.54424
+cd sonarqube-9.4.0.54424/bin/linux-x86-64/
+./sonar.sh start
+
+sonarcube default port 9000
+
+login to publicid:9000
+admin
+admin
+change the password
+login - my account - security - generate tokens - copy code to jenkins
+
+dashboard - manage jenkins - manage credentials or credentials - system - global credentials (unrestricted) 
+- add credentials - kind - secrete text - save code and give name
+
+docker
+dashboard - manage jenkins - manage credentials or credentials - system - global credentials (unrestricted) 
+- add credentials - kind - secrete text - save code and give name
+
+docker credentials -same steps -add credentials - username password - dockercred [we gave this name in our jenkins file]
+github credentials -same steps - choose secret text- go to github -settigs -developer settigs - token classic - 2nd one -select all - generate -copy the token to jenkins 
+
+docker install and give permission to ubuntu and jenkins
+ 
+-maaven installation
+sudo rm -rf /opt/apache-maven-3.9.6-src
+sudo rm -rf /opt/maven
+wget https://downloads.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz -P /tmp
+sudo tar xf /tmp/apache-maven-3.9.6-bin.tar.gz -C /opt
+sudo ln -s /opt/apache-maven-3.9.6 /opt/maven
+echo 'export PATH=$PATH:/opt/maven/bin' >> ~/.bashrc
+source ~/.bashrc
+mvn -v
+
+
+-creating eks cluster
+to create cluster
+eksctl create cluster --name=papiwave --region=ap-south-1 --without-nodegroup
+
+
+aws eks update-kubeconfig --name papiwave --region ap-south-1
+
+step 5
+# Create Public Node Group   
+eksctl create nodegroup --cluster=papiwaveai \
+                       --region=ap-south-1 \
+                       --name=papiwave-ng \
+                       --node-type=t2.medium
+                       --nodes=2 \
+                       --node-volume-size=30 \
+                       --ssh-access \
+                       --ssh-public-key=nodekey \
+                       --managed \
+                       --asg-access \
+                       --external-dns-access \
+                       --full-ecr-access \
+                       --appmesh-access \
+                       --alb-ingress-access
+
+ eksctl delete nodegroup --name=kovaion-ng \
+                         --cluster=papiwave
+
+
+This is to update node and nodegroup
+eksctl update nodegroup --cluster=papiwave \
+                        --region=ap-south-1 \
+                        --name=papiwave-ng \
+                        --node-type=t2.medium \
+                        --nodes=3 \
+                        --node-volume-size=30
+
+
+create deployment.yaml and service.yaml in local sys or ec2
+
+
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+kubectl get svc -n
+
+kubectl get deployments -n papiwave-007     #[it will show all deploments running under namespace papiwvae-007] 
+kubectl describe deployment deployment-nodejs-app -n papiwave-007    #[this will show that particular deployment details]
+kubectl describe pod <pod-name> -n papiwave-007
+
+kubectl delete pods --all -n papiwave-007           #[to delete pods in a namespace]
+kubectl get service -n papiwave-007
+
+
+helm insatllation using google is better
+nginx ingress controller download using google
+
+kubectl apply -f ingress.yaml
+
+ingress.yaml for nginx controller
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: papi-ingress
+  namespace: papiwave-007
+  annotations:
+    kubernetes.io/ingress.class: "nginx"  # Specifies the Ingress class for the NGINX Ingress Controller
+spec:
+  rules:
+  - host: "start.papiwave.com"  # Specifies the host for which the Ingress rule applies
+    http:
+      paths:
+      - path: /                   # Specifies the path for the Ingress rule
+        pathType: Prefix          # Indicates that the path should match a prefix
+        backend:
+          service:
+            name: service-nodejs-app  # Specifies the name of the backend service
+            port:
+              number: 80              # Specifies the port number of the backend service
+
