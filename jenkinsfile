@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+    
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', url: 'https://github.com/itskumaran/docker-Java-kubernetes-project.git'
+            }
+        }
+        stage('Navigate to shopfront directory') {
+            steps {
+                dir('shopfront') {
+                    // Run Maven clean install command
+                    sh 'mvn clean install'
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                dir('shopfront') {
+                    // Build Docker image
+                    sh 'docker build -t itskumaran/shopfront:latest .'
+                }
+            }
+        }
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                // Authenticate with Docker Hub using Docker Hub token
+                withCredentials([string(credentialsId: '5f2f73d5-76ab-46d2-a3c8-a0d9f4ba0f78', variable: 'DOCKER_TOKEN')]) {
+                    sh 'echo $DOCKER_TOKEN | docker login --username itskumaran --password-stdin'
+                }
+                // Change the tag of the Docker image
+                sh 'docker tag itskumaran/shopfront:latest itskumaran/shopfront:new_tag'
+                // Push the Docker image to Docker Hub with the new tag
+                sh 'docker push itskumaran/shopfront:new_tag'
+            }
+        }
+    }
+}
+
