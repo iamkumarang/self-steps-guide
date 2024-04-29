@@ -20,6 +20,21 @@ unzip awscliv2.zip
 sudo ./aws/install
 aws --version
 
+{ we have a shell script to install jenkins and docker in desktop
+chmod +x install_jenkins.sh
+
+Then, you can run the script using:
+
+./install_jenkins.sh
+
+chmod +x install_docker.sh
+
+Then, you can run the script using:
+
+./install_docker.sh }
+
+ 
+
 step-4
 docker insatllation
 sudo apt install docker.io
@@ -143,10 +158,10 @@ aws eks update-kubeconfig --name papiwave --region ap-south-1
 
 step 5
 # Create Public Node Group   
-eksctl create nodegroup --cluster=papiwaveai \
+eksctl create nodegroup --cluster=papiwave \
                        --region=ap-south-1 \
                        --name=papiwave-ng \
-                       --node-type=t2.medium
+                       --node-type=t2.micro
                        --nodes=2 \
                        --node-volume-size=30 \
                        --ssh-access \
@@ -182,7 +197,7 @@ kubectl get svc -n
 kubectl get deployments -n papiwave-007     #[it will show all deploments running under namespace papiwvae-007] 
 kubectl describe deployment deployment-nodejs-app -n papiwave-007    #[this will show that particular deployment details]
 kubectl describe pod <pod-name> -n papiwave-007
-
+	
 kubectl delete pods --all -n papiwave-007           #[to delete pods in a namespace]
 kubectl get service -n papiwave-007
 
@@ -190,7 +205,14 @@ kubectl get service -n papiwave-007
 helm insatllation using google is better
 nginx ingress controller download using google
 
+curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
+sudo apt-get install apt-transport-https --yes
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+sudo apt-get update
+sudo apt-get install helm
+
 kubectl apply -f ingress.yaml
+nginx controller configuration -https://amod-kadam.medium.com/setting-up-nginx-ingress-controller-with-eks-f27390bcf804
 
 ingress.yaml for nginx controller
 apiVersion: networking.k8s.io/v1
@@ -213,3 +235,48 @@ spec:
             port:
               number: 80              # Specifies the port number of the backend service
 
+argocd insatllation
+Install Argo CD with UI
+
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+2. Install Argo CD cli
+
+curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
+
+
+3. Open the Argo CD to external access, so that we can access the UI
+
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+
+4. initial admin password
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+
+5)un :admin
+pw :NmIJAY8bNC17yBEq                 -------------7KfX1R0dhlnnnOPe
+
+ARGOCD
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: my-application
+  namespace: my-namespace
+spec:
+  project: default
+  source:
+    repoURL: <repository_URL>
+    targetRevision: HEAD
+    path: <path_to_application_manifests>
+    helm:
+      valueFiles:
+        - values.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
