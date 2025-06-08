@@ -157,33 +157,8 @@ eksctl create cluster --name=papiwave --region=ap-south-1 --without-nodegroup
 aws eks update-kubeconfig --name papiwave --region ap-south-1
 
 step 5
-# Create Public Node Group   
-eksctl create nodegroup --cluster=papiwave \
-                       --region=ap-south-1 \
-                       --name=papiwave-ng \
-                       --node-type=t2.micro
-                       --nodes=2 \
-                       --node-volume-size=30 \
-                       --ssh-access \
-                       --ssh-public-key=nodekey \
-                       --managed \
-                       --asg-access \
-                       --external-dns-access \
-                       --full-ecr-access \
-                       --appmesh-access \
-                       --alb-ingress-access
-
- eksctl delete nodegroup --name=kovaion-ng \
-                         --cluster=papiwave
-
-
-This is to update node and nodegroup
-eksctl update nodegroup --cluster=papiwave \
-                        --region=ap-south-1 \
-                        --name=papiwave-ng \
-                        --node-type=t2.medium \
-                        --nodes=3 \
-                        --node-volume-size=30
+create a vpc and cluser with this url 
+https://medium.com/devopstronaut/deploying-a-production-ready-amazon-eks-cluster-7995f6b2fb74
 
 
 create deployment.yaml and service.yaml in local sys or ec2
